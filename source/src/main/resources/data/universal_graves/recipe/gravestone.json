@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "bbb",
+    "bsb"
+  ],
+  "key": {
+    "b": "minecraft:stone_bricks",
+    "s": "#minecraft:signs"
+  },
+  "result": {
+    "id": "universal_graves:visual_grave"
+  }
+}

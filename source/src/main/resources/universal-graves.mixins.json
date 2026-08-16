@@ -1,0 +1,26 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "eu.pb4.graves.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CreateBlockBreakingKineticBlockEntity",
+    "EndPlatformFeatureMixin",
+    "ExperienceOrbEntityAccessor",
+    "LivingEntityAccessor",
+    "LivingEntityMixin",
+    "MannequinEntityAccessor",
+    "PlayerInventoryAccessor",
+    "PlayerLikeEntityAccessor",
+    "ServerLevelMixin",
+    "ServerPlayerMixin",
+    "datafixer.DimensionStorageFileFixMixin",
+    "datafixer.ItemStackComponentizationFixMixin",
+    "datafixer.Schema1460Mixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
