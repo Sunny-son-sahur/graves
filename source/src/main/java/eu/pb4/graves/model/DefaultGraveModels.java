@@ -1,0 +1,471 @@
+package eu.pb4.graves.model;
+
+import com.mojang.math.Transformation;
+import eu.pb4.graves.model.parts.EntityModelPart;
+import eu.pb4.graves.model.parts.ItemDisplayModelPart;
+import eu.pb4.graves.model.parts.ParticleModelPart;
+import eu.pb4.graves.model.parts.TextDisplayModelPart;
+import eu.pb4.graves.registry.IconItem;
+import net.minecraft.world.entity.EntityTypes;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.Brightness;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
+
+public class DefaultGraveModels {
+    public static final GraveModel FALLBACK = playerHead();
+
+    public static void forEach(BiConsumer<String, GraveModel> consumer) {
+        consumer.accept("default", playerHead());
+        consumer.accept("player_head", playerHead());
+        consumer.accept("corpse_player", corpsePlayer());
+        consumer.accept("corpse_zombie", corpseZombie());
+        consumer.accept("soul", soul());
+        consumer.accept("ender", ender());
+    }
+
+    public static GraveModel debug() {
+        return playerHead();
+    }
+
+    public static GraveModel soul() {
+        var model = new GraveModel();
+        {
+            var head = new ItemDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().scale(0.8f)
+            );
+            head.transformation.translation();
+            head.billboardMode = Display.BillboardConstraints.CENTER;
+
+            var skull = head.copy();
+            head.tags.add(ModelTags.IF_PROTECTED);
+            head.tags.add(ModelTags.PLAYER_HEAD);
+            head.itemStack = Items.PLAYER_HEAD.getDefaultInstance();
+
+            skull.tags.add(ModelTags.IF_UNPROTECTED);
+            skull.itemStack = Items.SKELETON_SKULL.getDefaultInstance();
+
+            model.elements.add(head);
+            model.elements.add(skull);
+        }
+
+        {
+            var particle = new ParticleModelPart();
+            particle.particleEffect = ParticleTypes.SOUL_FIRE_FLAME;
+            particle.delta = new Vector3f(0.2f);
+            particle.speed = 0.01f;
+            particle.count = 2;
+            particle.waitDuration = 3;
+            model.elements.add(particle);
+        }
+
+        {
+            var lock = new ItemDisplayModelPart();
+            lock.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.44f, 0.3f).scale(0.35f, 0.35f, 0.1f)
+            );
+            lock.transformation.translation();
+            lock.viewRange = 0.2f;
+            lock.billboardMode = Display.BillboardConstraints.CENTER;
+
+            lock.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            lock.itemStack = IconItem.of(IconItem.Texture.REMOVE_PROTECTION);
+
+            model.elements.add(lock);
+        }
+
+        {
+            var lockText = new TextDisplayModelPart();
+            lockText.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.31f, 0.3f).scale(0.35f)
+            );
+            lockText.textShadow = true;
+            lockText.transformation.translation();
+            lockText.viewRange = 0.2f;
+            lockText.billboardMode = Display.BillboardConstraints.CENTER;
+
+            lockText.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            lockText.text = TaggedText.of("<yellow>${cost}");
+
+            model.elements.add(lockText);
+        }
+
+        addGenericText(model, customText -> {
+            customText.transformation = new Transformation(
+                    new Matrix4f().translate(0, 0.25f, 0).scale(0.4f)
+            );
+            customText.textWidth = 9999;
+            customText.textShadow = true;
+            customText.brightness = new Brightness(15, 15);
+            customText.billboardMode = Display.BillboardConstraints.CENTER;
+            customText.viewRange = 0.5f;
+        });
+
+        return model;
+    }
+
+    public static GraveModel ender() {
+        var model = new GraveModel();
+        {
+            var eye = new EntityModelPart();
+            var pearl = new EntityModelPart();
+
+            eye.entityType = EntityTypes.EYE_OF_ENDER;
+            eye.position = Vec3.ZERO;
+            eye.tags.add(ModelTags.IF_PROTECTED);
+
+            pearl.entityType = EntityTypes.ENDER_PEARL;
+            pearl.position = Vec3.ZERO;
+            pearl.tags.add(ModelTags.IF_UNPROTECTED);
+
+            model.elements.add(eye);
+            model.elements.add(pearl);
+        }
+
+        {
+            var particle = new ParticleModelPart();
+            particle.particleEffect = ParticleTypes.SOUL_FIRE_FLAME;
+            particle.delta = new Vector3f(0.2f);
+            particle.speed = 0.01f;
+            particle.count = 2;
+            particle.waitDuration = 3;
+            model.elements.add(particle);
+        }
+
+        {
+            var lock = new ItemDisplayModelPart();
+            lock.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.44f, 0.3f).scale(0.35f, 0.35f, 0.1f)
+            );
+            lock.transformation.translation();
+            lock.viewRange = 0.2f;
+            lock.billboardMode = Display.BillboardConstraints.CENTER;
+
+            lock.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            lock.itemStack = IconItem.of(IconItem.Texture.REMOVE_PROTECTION);
+
+            model.elements.add(lock);
+        }
+
+        {
+            var lockText = new TextDisplayModelPart();
+            lockText.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.31f, 0.3f).scale(0.35f)
+            );
+            lockText.textShadow = true;
+            lockText.transformation.translation();
+            lockText.viewRange = 0.2f;
+            lockText.billboardMode = Display.BillboardConstraints.CENTER;
+
+            lockText.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            lockText.text = TaggedText.of("<yellow>${cost}");
+
+            model.elements.add(lockText);
+        }
+
+        addGenericText(model, customText -> {
+            customText.transformation = new Transformation(
+                    new Matrix4f().translate(0, 0.25f, 0).scale(0.4f)
+            );
+            customText.textWidth = 9999;
+            customText.textShadow = true;
+            customText.brightness = new Brightness(15, 15);
+            customText.billboardMode = Display.BillboardConstraints.CENTER;
+            customText.viewRange = 0.5f;
+        });
+
+        return model;
+    }
+
+    public static GraveModel corpseZombie() {
+        var model = new GraveModel();
+
+        {
+            var entity = new EntityModelPart();
+            entity.entityType = EntityTypes.SKELETON;
+            entity.position = new Vec3(0.9, -0.51, 0);
+            entity.entityPose = Pose.SLEEPING;
+
+            entity.tags.add(ModelTags.IF_UNPROTECTED);
+            entity.tags.add(ModelTags.PLAYER_HEAD);
+            entity.tags.add(ModelTags.EQUIPMENT_HELMET);
+            entity.tags.add(ModelTags.EQUIPMENT_CHESTPLATE);
+            entity.tags.add(ModelTags.EQUIPMENT_LEGGINGS);
+            entity.tags.add(ModelTags.EQUIPMENT_BOOTS);
+            entity.tags.add(ModelTags.EQUIPMENT_MAIN_HAND);
+            entity.tags.add(ModelTags.EQUIPMENT_OFFHAND_HAND);
+
+            model.elements.add(entity);
+        }
+        {
+            var entity = new EntityModelPart();
+            entity.entityType = EntityTypes.ZOMBIE;
+            entity.position = new Vec3(0.9, -0.51, 0);
+            entity.entityPose = Pose.SLEEPING;
+
+            entity.tags.add(ModelTags.IF_PROTECTED);
+            entity.tags.add(ModelTags.PLAYER_HEAD);
+            entity.tags.add(ModelTags.EQUIPMENT_HELMET);
+            entity.tags.add(ModelTags.EQUIPMENT_CHESTPLATE);
+            entity.tags.add(ModelTags.EQUIPMENT_LEGGINGS);
+            entity.tags.add(ModelTags.EQUIPMENT_BOOTS);
+            entity.tags.add(ModelTags.EQUIPMENT_MAIN_HAND);
+            entity.tags.add(ModelTags.EQUIPMENT_OFFHAND_HAND);
+
+            model.elements.add(entity);
+        }
+
+
+        {
+            var head = new ItemDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().rotateY(Mth.HALF_PI).translate(0, -0.42f, 0).rotateX(-Mth.PI / 3).scale(0.35f)
+            );
+            head.transformation.translation();
+
+            head.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            head.itemStack = IconItem.of(IconItem.Texture.REMOVE_PROTECTION);
+
+            model.elements.add(head);
+        }
+
+        {
+            var head = new TextDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().rotateY(Mth.HALF_PI).translate(0, -0.29f, 0).rotateX(-Mth.PI / 3).scale(0.35f)
+            );
+            head.textShadow = true;
+            head.transformation.translation();
+
+            head.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            head.text = TaggedText.of("<yellow>${cost}");
+
+            model.elements.add(head);
+        }
+
+
+        addGenericText(model, customText -> {
+            customText.transformation = new Transformation(
+                    new Matrix4f().translate(0, 0.15f, 0).scale(0.6f)
+            );
+            customText.textWidth = 9999;
+            customText.textShadow = true;
+            customText.brightness = new Brightness(15, 15);
+            customText.billboardMode = Display.BillboardConstraints.CENTER;
+            customText.viewRange = 0.5f;
+        });
+
+        return model;
+    }
+
+    public static GraveModel corpsePlayer() {
+        var model = new GraveModel();
+
+        {
+            var entity = new EntityModelPart();
+            entity.entityType = EntityTypes.SKELETON;
+            entity.position = new Vec3(0.9, -0.51, 0);
+            entity.entityPose = Pose.SLEEPING;
+
+            entity.tags.add(ModelTags.IF_UNPROTECTED);
+            entity.tags.add(ModelTags.PLAYER_HEAD);
+            entity.tags.add(ModelTags.EQUIPMENT_HELMET);
+            entity.tags.add(ModelTags.EQUIPMENT_CHESTPLATE);
+            entity.tags.add(ModelTags.EQUIPMENT_LEGGINGS);
+            entity.tags.add(ModelTags.EQUIPMENT_BOOTS);
+            entity.tags.add(ModelTags.EQUIPMENT_MAIN_HAND);
+            entity.tags.add(ModelTags.EQUIPMENT_OFFHAND_HAND);
+
+            model.elements.add(entity);
+        }
+        {
+            var entity = new EntityModelPart();
+            entity.entityType = EntityTypes.PLAYER;
+            entity.position = new Vec3(0.9, -0.51, 0);
+            entity.entityPose = Pose.SLEEPING;
+
+            entity.tags.add(ModelTags.IF_PROTECTED);
+            entity.tags.add(ModelTags.PLAYER_HEAD);
+            entity.tags.add(ModelTags.EQUIPMENT_HELMET);
+            entity.tags.add(ModelTags.EQUIPMENT_CHESTPLATE);
+            entity.tags.add(ModelTags.EQUIPMENT_LEGGINGS);
+            entity.tags.add(ModelTags.EQUIPMENT_BOOTS);
+            entity.tags.add(ModelTags.EQUIPMENT_MAIN_HAND);
+            entity.tags.add(ModelTags.EQUIPMENT_OFFHAND_HAND);
+
+            model.elements.add(entity);
+        }
+
+
+        {
+            var head = new ItemDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().rotateY(Mth.HALF_PI).translate(0, -0.42f, 0).rotateX(-Mth.PI / 3).scale(0.35f)
+            );
+            head.transformation.translation();
+
+            head.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            head.itemStack = IconItem.of(IconItem.Texture.REMOVE_PROTECTION);
+
+            model.elements.add(head);
+        }
+
+        {
+            var head = new TextDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().rotateY(Mth.HALF_PI).translate(0, -0.29f, 0).rotateX(-Mth.PI / 3).scale(0.35f)
+            );
+            head.textShadow = true;
+            head.transformation.translation();
+
+            head.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            head.text = TaggedText.of("<yellow>${cost}");
+
+            model.elements.add(head);
+        }
+
+
+        addGenericText(model, customText -> {
+            customText.transformation = new Transformation(
+                    new Matrix4f().translate(0, 0.1f, 0).scale(0.6f)
+            );
+            customText.textWidth = 9999;
+            customText.textShadow = true;
+            customText.brightness = new Brightness(15, 15);
+            customText.billboardMode = Display.BillboardConstraints.CENTER;
+            customText.viewRange = 0.5f;
+        });
+
+        return model;
+    }
+
+    public static GraveModel playerHead() {
+        var model = new GraveModel();
+        {
+            var tool = new ItemDisplayModelPart();
+            tool.transformation = new Transformation(
+                    new Matrix4f().translate(0.4f, -0.495f, -0.2f).rotateY(330 * Mth.DEG_TO_RAD).rotateZ(5 * Mth.DEG_TO_RAD).rotateX(Mth.HALF_PI).scale(0.5f)
+            );
+            tool.transformation.translation();
+
+            tool.tags.add(ModelTags.ITEM);
+
+            model.elements.add(tool);
+        }
+        {
+            var tool = new ItemDisplayModelPart();
+            tool.transformation = new Transformation(
+                    new Matrix4f().translate(-0.35f, -0.43f, -0.05f).rotateY(80 * Mth.DEG_TO_RAD).rotateZ(-30 * Mth.DEG_TO_RAD).rotateX(-160 * Mth.DEG_TO_RAD).scale(0.5f)
+            );
+            tool.transformation.translation();
+
+            tool.tags.add(ModelTags.ITEM);
+
+            model.elements.add(tool);
+        }
+
+        {
+            var head = new ItemDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.35f, 0).rotateX(-Mth.PI / 12).rotateZ(-Mth.PI / 64)
+            );
+            head.transformation.translation();
+
+            var skull = head.copy();
+
+
+            head.tags.add(ModelTags.IF_PROTECTED);
+            head.tags.add(ModelTags.PLAYER_HEAD);
+            head.itemStack = Items.PLAYER_HEAD.getDefaultInstance();
+
+            skull.tags.add(ModelTags.IF_UNPROTECTED);
+            skull.itemStack = Items.SKELETON_SKULL.getDefaultInstance();
+
+            model.elements.add(head);
+            model.elements.add(skull);
+        }
+
+        {
+            var head = new ItemDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.44f, 0.42f).rotateX(-Mth.PI / 3).scale(0.35f)
+            );
+            head.transformation.translation();
+
+            head.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            head.itemStack = IconItem.of(IconItem.Texture.REMOVE_PROTECTION);
+
+            model.elements.add(head);
+        }
+
+        {
+            var head = new TextDisplayModelPart();
+            head.transformation = new Transformation(
+                    new Matrix4f().translate(0, -0.31f, 0.42f).rotateX(-Mth.PI / 3).scale(0.35f)
+            );
+            head.textShadow = true;
+            head.transformation.translation();
+
+            head.tags.add(ModelTags.IF_REQUIRE_PAYMENT);
+            head.text = TaggedText.of("<yellow>${cost}");
+
+            model.elements.add(head);
+        }
+
+        addGenericText(model, customText -> {
+            customText.transformation = new Transformation(
+                    new Matrix4f().translate(0, 0.1f, 0).scale(0.6f)
+            );
+            customText.textWidth = 9999;
+            customText.textShadow = true;
+            customText.brightness = new Brightness(15, 15);
+            customText.billboardMode = Display.BillboardConstraints.CENTER;
+            customText.viewRange = 0.5f;
+        });
+
+        return model;
+    }
+
+    private static void addGenericText(GraveModel model, Consumer<TextDisplayModelPart> baseModifier) {
+        var customText = new TextDisplayModelPart();
+        baseModifier.accept(customText);
+        customText.transformation.translation();
+
+        var vis = customText.copy();
+        var mainText = customText.copy();
+
+        mainText.text = TaggedText.of(
+                TaggedText.Line.of("<gold><lang:'text.graves.grave_of':'<yellow>${player}'>"),
+                TaggedText.Line.of("<yellow>${death_cause}"),
+                TaggedText.Line.of("<gray><lang:'text.graves.items_xp':'<white>${item_count}':'<white>${xp}'>"),
+                TaggedText.Line.of("<blue><lang:'text.graves.protected_time':'<white>${protection_time}'><r>", ModelTags.IF_PROTECTED, ModelTags.HAS_PROTECTION_TIMER),
+                TaggedText.Line.of("<red><lang:'text.graves.break_time':'<white>${break_time}'>", ModelTags.HAS_BREAKING_TIMER));
+
+        vis.text = TaggedText.of(
+                "<gold><lang:'text.graves.grave_of':'<yellow>${player}'>",
+                "<yellow>${death_cause}"
+        );
+        mainText.tags.add(ModelTags.IF_NOT_VISUAL);
+
+        customText.text = TaggedText.of("${text_1}", "${text_2}", "${text_3}", "${text_4}");
+        customText.tags.add(ModelTags.IF_PLAYER_MADE);
+        customText.tags.add(ModelTags.IF_VISUAL);
+
+        vis.tags.add(ModelTags.IF_VISUAL);
+        vis.tags.add(ModelTags.IF_NOT_PLAYER_MADE);
+
+        model.elements.add(mainText);
+        model.elements.add(customText);
+        model.elements.add(vis);
+    }
+}
